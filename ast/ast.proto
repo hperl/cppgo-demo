@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package ast;
+
+message FunctionDecls {
+  repeated FunctionDecl function_decl = 1;
+}
+
+message FunctionDecl {
+  string      name         = 1;
+  SourceRange source_range = 2;
+}
+
+message SourceRange {
+  SourceLocation begin = 1;
+  SourceLocation end   = 2;
+}
+
+message SourceLocation {
+  int32 column = 1;
+  int32 row    = 2;
+}

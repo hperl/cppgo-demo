@@ -1,0 +1,50 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
+proto_library(
+    name = "ast_proto",
+    srcs = ["ast.proto"],
+    visibility = ["//visibility:public"],
+)
+
+cc_proto_library(
+    name = "ast_cc_proto",
+    deps = ["ast_proto"],
+)
+
+go_proto_library(
+    name = "ast_go_proto",
+    importpath = "github.com/hperl/cppgo-demo/ast",
+    proto = ":ast_proto",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "ast.go",
+        "functions.cc",
+        "functions.h",
+    ],
+    cdeps = [
+        ":ast_cc_proto",
+    ],
+    cgo = True,
+    clinkopts = ["-lclangBasic -lclangFrontend -lclangTooling -lclangAST -lLLVM-7"],
+    cxxopts = [
+        "-std=c++11 -fno-rtti -DGOOGLE_PROTOBUF_NO_RTTI",
+    ],
+    embed = [":ast_go_proto"],
+    importpath = "github.com/hperl/cppgo-demo/ast",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_golang_protobuf//proto:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    timeout = "short",
+    srcs = ["ast_test.go"],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = ["@io_bazel_rules_go//go/tools/bazel:go_default_library"],  # keep
+)
